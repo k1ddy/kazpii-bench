@@ -62,15 +62,15 @@ def match_spans(gold: list[dict], det: list[Detected]) -> tuple[int, int, int]:
 
 
 def sig(v: str) -> str:
-    """Сигнатура first2|last2 — устойчива к FPE-токенам и sample-маскам."""
+    """Сигнатура first2+last2 — устойчива к FPE-токенам и sample-маскам."""
     n = norm_value(v)
-    return n[:2] + "|" + n[-2:]
+    return n[:2] + n[-2:]
 
 
 def match_values(gold: list[dict], det: list[Detected]) -> tuple[int, int, int]:
-    """Матч по (type, first2|last2) — устойчив к sample-маскам и FPE-токенам."""
+    """Матч по (type, first2+last2) — устойчив к sample-маскам и FPE-токенам."""
     gold_set = {(canon_type(g["type"]), sig(g["value"])) for g in gold}
-    det_set = {(canon_type(d.type), d.value) for d in det}
+    det_set = {(canon_type(d.type), sig(d.value)) for d in det}
     tp = len(gold_set & det_set)
     fp = len(det_set - gold_set)
     fn = len(gold_set - det_set)
@@ -106,13 +106,20 @@ def evaluate(dataset_path, detect_fn, mode: str = "span") -> dict:
             nb.tp += tp
             nb.fp += fp
             nb.fn += fn
-            # по типам — через ту же сигнатуру, что и micro
+            # по типам — тем же матчингом, что и micro
             gold_by_type = defaultdict(set)
-            for g in gold:
-                gold_by_type[canon_type(g["type"])].add((canon_type(g["type"]), sig(g["value"])))
             det_by_type = defaultdict(set)
-            for d in det:
-                det_by_type[canon_type(d.type)].add((canon_type(d.type), d.value))
+            if mode == "span":
+                for g in gold:
+                    gold_by_type[canon_type(g["type"])].add((canon_type(g["type"]), g["start"], g["end"]))
+                for d in det:
+                    if d.start is not None:
+                        det_by_type[canon_type(d.type)].add((canon_type(d.type), d.start, d.end))
+            else:
+                for g in gold:
+                    gold_by_type[canon_type(g["type"])].add((canon_type(g["type"]), sig(g["value"])))
+                for d in det:
+                    det_by_type[canon_type(d.type)].add((canon_type(d.type), sig(d.value)))
             for t, gset in gold_by_type.items():
                 dset = det_by_type.get(t, set())
                 m.per_type[canon_type(t)][0] += len(gset & dset)

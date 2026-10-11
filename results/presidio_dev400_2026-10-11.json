@@ -1,0 +1,138 @@
+{
+  "dataset": "/tmp/dev_400.jsonl",
+  "mode": "span",
+  "micro": {
+    "precision": 0.138,
+    "recall": 0.2051,
+    "f1": 0.165,
+    "tp": 129,
+    "fp": 806,
+    "fn": 500
+  },
+  "negatives": {
+    "count": 104,
+    "false_positives": 4287,
+    "fp_rate": 41.2212
+  },
+  "per_type": {
+    "CARD": {
+      "tp": 32,
+      "fp": 0,
+      "fn": 47,
+      "recall": 0.4051
+    },
+    "DATE": {
+      "tp": 0,
+      "fp": 86,
+      "fn": 0,
+      "recall": null
+    },
+    "EMAIL": {
+      "tp": 42,
+      "fp": 0,
+      "fn": 0,
+      "recall": 1.0
+    },
+    "KZ_BIN": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 77,
+      "recall": 0.0
+    },
+    "KZ_IBAN": {
+      "tp": 23,
+      "fp": 0,
+      "fn": 17,
+      "recall": 0.575
+    },
+    "KZ_IIN": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 172,
+      "recall": 0.0
+    },
+    "KZ_PASSPORT": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 51,
+      "recall": 0.0
+    },
+    "LOC": {
+      "tp": 0,
+      "fp": 33,
+      "fn": 0,
+      "recall": null
+    },
+    "MEDICAL_LICENSE": {
+      "tp": 0,
+      "fp": 3,
+      "fn": 0,
+      "recall": null
+    },
+    "NRP": {
+      "tp": 0,
+      "fp": 10,
+      "fn": 0,
+      "recall": null
+    },
+    "PERSON": {
+      "tp": 0,
+      "fp": 150,
+      "fn": 41,
+      "recall": 0.0
+    },
+    "PHONE": {
+      "tp": 32,
+      "fp": 33,
+      "fn": 95,
+      "recall": 0.252
+    },
+    "URL": {
+      "tp": 0,
+      "fp": 42,
+      "fn": 0,
+      "recall": null
+    },
+    "US_BANK_NUMBER": {
+      "tp": 0,
+      "fp": 202,
+      "fn": 0,
+      "recall": null
+    },
+    "US_DRIVER_LICENSE": {
+      "tp": 0,
+      "fp": 217,
+      "fn": 0,
+      "recall": null
+    },
+    "US_PASSPORT": {
+      "tp": 0,
+      "fp": 15,
+      "fn": 0,
+      "recall": null
+    },
+    "US_SSN": {
+      "tp": 0,
+      "fp": 15,
+      "fn": 0,
+      "recall": null
+    }
+  },
+  "errors": [],
+  "by_noise": {
+    "clean": {
+      "precision": 0.1328,
+      "recall": 0.3367,
+      "f1": 0.1905,
+      "tp": 100,
+      "fn": 197
+    },
+    "ocr": {
+      "precision": 0.1593,
+      "recall": 0.0873,
+      "f1": 0.1128,
+      "tp": 29,
+      "fn": 303
+    }
+  }
+}

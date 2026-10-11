@@ -81,6 +81,6 @@ class GatewayScanDetector:
             # "KZ**00(5026a2)" -> first2="KZ", last2="00"
             m = re.match(r"^(.{0,2})\*\*(.{0,2})\(", sample)
             first2, last2 = (m.group(1), m.group(2)) if m else ("", "")
-            out.append(Detected(f["type"], f"{first2}|{last2}".upper()))
+            out.append(Detected(f["type"], f"{first2}{last2}".upper()))
         return out
 

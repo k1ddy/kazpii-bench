@@ -53,10 +53,22 @@ def eval_cmd(args) -> int:
         from .detectors import BaselineDetector
 
         det = BaselineDetector()
-    else:
+    elif args.detector == "gateway":
         from .detectors import GatewayScanDetector
 
         det = GatewayScanDetector(args.url)
+    elif args.detector == "presidio":
+        from .detectors_ext import PresidioDetector
+
+        det = PresidioDetector()
+    elif args.detector == "natasha":
+        from .detectors_ext import NatashaDetector
+
+        det = NatashaDetector()
+    else:
+        from .detectors_ext import GlinerDetector
+
+        det = GlinerDetector()
     mode = "value" if args.detector == "gateway" else args.mode
     result = run_evaluate(args.dataset, det.detect, mode=mode)
     from .harness import report_markdown
@@ -86,7 +98,7 @@ def main(argv=None) -> int:
     b.set_defaults(func=build_cmd)
 
     e = sub.add_parser("eval", help="прогнать детектор по датасету")
-    e.add_argument("--detector", required=True, choices=["baseline", "gateway"])
+    e.add_argument("--detector", required=True, choices=["baseline", "gateway", "presidio", "natasha", "gliner"])
     e.add_argument("--dataset", required=True)
     e.add_argument("--url", default="http://127.0.0.1:18451", help="база шлюза для detector=gateway")
     e.add_argument("--mode", default="value", choices=["span", "value"])

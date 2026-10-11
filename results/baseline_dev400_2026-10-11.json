@@ -1,0 +1,84 @@
+{
+  "dataset": "/tmp/dev_400.jsonl",
+  "mode": "span",
+  "micro": {
+    "precision": 1.0,
+    "recall": 0.4436,
+    "f1": 0.6145,
+    "tp": 279,
+    "fp": 0,
+    "fn": 350
+  },
+  "negatives": {
+    "count": 104,
+    "false_positives": 0,
+    "fp_rate": 0.0
+  },
+  "per_type": {
+    "CARD": {
+      "tp": 32,
+      "fp": 0,
+      "fn": 47,
+      "recall": 0.4051
+    },
+    "EMAIL": {
+      "tp": 42,
+      "fp": 0,
+      "fn": 0,
+      "recall": 1.0
+    },
+    "KZ_BIN": {
+      "tp": 36,
+      "fp": 0,
+      "fn": 41,
+      "recall": 0.4675
+    },
+    "KZ_IBAN": {
+      "tp": 23,
+      "fp": 0,
+      "fn": 17,
+      "recall": 0.575
+    },
+    "KZ_IIN": {
+      "tp": 85,
+      "fp": 0,
+      "fn": 87,
+      "recall": 0.4942
+    },
+    "KZ_PASSPORT": {
+      "tp": 13,
+      "fp": 0,
+      "fn": 38,
+      "recall": 0.2549
+    },
+    "PERSON": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 41,
+      "recall": 0.0
+    },
+    "PHONE": {
+      "tp": 48,
+      "fp": 0,
+      "fn": 79,
+      "recall": 0.378
+    }
+  },
+  "errors": [],
+  "by_noise": {
+    "clean": {
+      "precision": 1.0,
+      "recall": 0.8283,
+      "f1": 0.9061,
+      "tp": 246,
+      "fn": 51
+    },
+    "ocr": {
+      "precision": 1.0,
+      "recall": 0.0994,
+      "f1": 0.1808,
+      "tp": 33,
+      "fn": 299
+    }
+  }
+}

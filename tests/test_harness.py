@@ -19,7 +19,7 @@ def test_canon_type_maps_ner_aliases():
 
 def test_match_values_firstlast():
     gold = [{"type": "KZ_IIN", "start": 0, "end": 12, "value": "900517301146"}]
-    det = [type("D", (), {"type": "KZ_IIN", "value": "90|46", "start": None, "end": None})()]
+    det = [type("D", (), {"type": "KZ_IIN", "value": "9046", "start": None, "end": None})()]
     tp, fp, fn = match_values(gold, det)
     assert (tp, fp, fn) == (1, 0, 0)
 
