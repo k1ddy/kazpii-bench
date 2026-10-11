@@ -45,3 +45,17 @@ def test_baseline_detects_clean_iin():
 def test_negatives_produce_zero_findings():
     d = BaselineDetector()
     assert d.detect("договор займа № 100238471582 от 12.03") == []
+
+
+def test_leaderboard_json_files_exist():
+    """Защита от расхождений: README/leaderboard должны ссылаться на реальные json."""
+    import json
+    import os
+
+    base = os.path.join(os.path.dirname(__file__), "..", "results")
+    for name in ["baseline", "gateway_scan", "presidio", "natasha", "gliner"]:
+        path = os.path.join(base, f"{name}_dev400_2026-10-11.json")
+        assert os.path.exists(path), path
+        with open(path) as f:
+            d = json.load(f)
+        assert "micro" in d and "by_noise" in d and "per_type" in d
