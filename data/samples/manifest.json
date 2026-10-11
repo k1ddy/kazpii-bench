@@ -1,0 +1,24 @@
+{
+  "schema_version": "0.1.0",
+  "layer": "A",
+  "seed": 20261011,
+  "n_requested": 5000,
+  "n_dev": 3986,
+  "n_test": 1014,
+  "test_ratio": 0.2,
+  "noise": [
+    "ocr"
+  ],
+  "generator": "kz-identifiers/0.1.0",
+  "files": {
+    "dev": {
+      "path": "data/samples/dev_sample_5000.jsonl",
+      "sha256": "d2d4ddc537a3fb7b3a0ac661d3d9f6e94b809239735570319e68a1d4d1314cbf"
+    },
+    "test": {
+      "path": "data/private/test_5000.jsonl",
+      "sha256": "f08848630caa2625511e474a5db84bf2de20b6a6db75511c53eb8b7a38f34e94"
+    }
+  },
+  "note": "test-часть закрыта: хранится вне публичного репозитория"
+}

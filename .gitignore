@@ -1,0 +1,11 @@
+__pycache__/
+*.egg-info/
+.venv/
+.pytest_cache/
+.ruff_cache/
+dist/
+build/
+
+# ЗАКРЫТАЯ тестовая часть — никогда в git
+data/private/
+data/*/private/
