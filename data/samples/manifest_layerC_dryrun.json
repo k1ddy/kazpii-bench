@@ -1,0 +1,28 @@
+{
+  "schema_version": "0.1.0",
+  "layer": "C",
+  "seed": 20261011,
+  "n_requested": 2,
+  "n_test": 0,
+  "test_ratio": 0.2,
+  "noise": [],
+  "generator": "openai/gpt-6-luna + anthropic/claude-haiku-5.5 + deepseek/deepseek-v4.1-flash",
+  "files": {
+    "dev": {
+      "path": "/tmp/dev_c.jsonl",
+      "sha256": "24fc894321969b8e32ca65ee4a3b82856ba40e7ce0d44230f8e7734ad53f3c73"
+    },
+    "test": {
+      "path": "data/private/test_c.jsonl",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "note": "dry-run 2 seed × 3 модели = 4 принято; стоимость ~$0.01",
+  "n_accepted": 4,
+  "stats": {
+    "accepted": 4,
+    "rejected": {},
+    "accept_rate": 1.0,
+    "cost_estimate_usd": null
+  }
+}

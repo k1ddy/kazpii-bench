@@ -17,6 +17,20 @@ def build_cmd(args) -> int:
         noise_kinds = tuple(args.noise.split(",")) if args.noise else ("ocr",)
         dev, test = generate(args.n, seed=args.seed, test_ratio=args.test_ratio, noise_kinds=noise_kinds)
         generator = "kz-identifiers/0.1.0"
+    elif args.layer == "C":
+        if not args.models:
+            print("--models required for layer C", file=sys.stderr)
+            return 2
+        from .layer_c import build_layer_c
+
+        dev, test, stats = build_layer_c(
+            args.dev_in,
+            args.models.split(","),
+            args.n,
+            seed=args.seed,
+            test_ratio=args.test_ratio,
+        )
+        generator = " + ".join(args.models.split(","))
     else:
         if not args.kaznerd:
             print("--kaznerd required for layer B", file=sys.stderr)
@@ -87,12 +101,19 @@ def main(argv=None) -> int:
     p = argparse.ArgumentParser(prog="kazpii-bench", description="KazPII-Bench dataset builder")
     sub = p.add_subparsers(dest="cmd", required=True)
     b = sub.add_parser("build", help="сгенерировать слой датасета")
-    b.add_argument("--layer", default="A", choices=["A", "B"], help="A — синтетика, B — KazNERD+вставка")
+    b.add_argument(
+        "--layer",
+        default="A",
+        choices=["A", "B", "C"],
+        help="A — синтетика, B — KazNERD+вставка, C — LLM-перефраз",
+    )
     b.add_argument("--kaznerd", default="", help="путь к IOB2_train.txt KazNERD (для слоя B)")
+    b.add_argument("--models", default="", help="слой C: список моделей через запятую")
     b.add_argument("--n", type=int, default=5000)
     b.add_argument("--seed", type=int, default=20261011)
     b.add_argument("--test-ratio", type=float, default=0.2)
     b.add_argument("--noise", default="ocr", help="список нойзов через запятую: ocr,kaz_loose,translit")
+    b.add_argument("--dev-in", default="", help="слой C: seed-набор (jsonl слоя A/B)")
     b.add_argument("--dev-out", required=True)
     b.add_argument("--test-out", required=True)
     b.add_argument("--manifest", default="")
