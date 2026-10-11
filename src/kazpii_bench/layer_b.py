@@ -6,6 +6,7 @@
 PER/ORG/LOC, но нет персональных идентификаторов — это ловит ложные
 срабатывания детекторов на именах и организациях.
 """
+
 from __future__ import annotations
 
 import random
@@ -82,10 +83,12 @@ def build_example(rng, sent_id, tokens, idx, *, insert_prob=0.7) -> Example | No
             tail = " ".join(tokens[pos:])
             text = f"{head} {insertion} {tail}"
             start = len(head) + 1
-        spans.append(Span(start=start, end=start + len(insertion), type=f"PLACEHOLDER:{kind}", value=insertion))
+        spans.append(
+            Span(start=start, end=start + len(insertion), type=f"PLACEHOLDER:{kind}", value=insertion)
+        )
         spans = finalize_spans(spans)
         for s in spans:
-            s.value = text[s.start:s.end]
+            s.value = text[s.start : s.end]
 
     return Example(
         id=f"kzpb-B{idx:06d}",

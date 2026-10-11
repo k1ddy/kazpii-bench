@@ -1,4 +1,5 @@
 """CLI:python -m kazpii_bench build --layer A --n 5000 --seed 42 --dev-out ... --test-out ..."""
+
 from __future__ import annotations
 
 import argparse
@@ -98,7 +99,9 @@ def main(argv=None) -> int:
     b.set_defaults(func=build_cmd)
 
     e = sub.add_parser("eval", help="прогнать детектор по датасету")
-    e.add_argument("--detector", required=True, choices=["baseline", "gateway", "presidio", "natasha", "gliner"])
+    e.add_argument(
+        "--detector", required=True, choices=["baseline", "gateway", "presidio", "natasha", "gliner"]
+    )
     e.add_argument("--dataset", required=True)
     e.add_argument("--url", default="http://127.0.0.1:18451", help="база шлюза для detector=gateway")
     e.add_argument("--mode", default="value", choices=["span", "value"])

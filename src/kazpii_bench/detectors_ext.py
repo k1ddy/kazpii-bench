@@ -1,5 +1,8 @@
 """Детекторы-сравнение: Presidio и Natasha — «из коробки», как их ставят клиенты."""
+
 from __future__ import annotations
+
+from typing import ClassVar
 
 from .harness import Detected
 
@@ -40,8 +43,11 @@ class PresidioDetector:
             except Exception:
                 continue
             for r in res:
-                out.append(Detected(PRESIDIO_MAP.get(r.entity_type, r.entity_type),
-                                    text[r.start:r.end], r.start, r.end))
+                out.append(
+                    Detected(
+                        PRESIDIO_MAP.get(r.entity_type, r.entity_type), text[r.start : r.end], r.start, r.end
+                    )
+                )
         return out
 
 
@@ -64,7 +70,7 @@ class NatashaDetector:
         for span in doc.spans:
             t = {"PER": "PERSON", "ORG": "ORG", "LOC": "LOC"}.get(span.type)
             if t:
-                out.append(Detected(t, text[span.start:span.stop], span.start, span.stop))
+                out.append(Detected(t, text[span.start : span.stop], span.start, span.stop))
         return out
 
 
@@ -74,7 +80,16 @@ class GlinerDetector:
     Тяжёлые зависимости ставятся отдельно: pip install gliner torch.
     """
 
-    LABELS = ["person", "organization", "iin", "bin", "iban", "credit card", "phone", "email"]
+    LABELS: ClassVar[list[str]] = [
+        "person",
+        "organization",
+        "iin",
+        "bin",
+        "iban",
+        "credit card",
+        "phone",
+        "email",
+    ]
 
     def __init__(self, model: str = "urchade/gliner_small-v2.1", threshold: float = 0.4):
         from gliner import GLiNER
@@ -85,8 +100,16 @@ class GlinerDetector:
     def detect(self, text: str) -> list[Detected]:
         raw = self.model.predict_entities(text, self.LABELS, threshold=self.threshold)
         label_map = {
-            "person": "PERSON", "organization": "ORG", "iin": "KZ_IIN", "bin": "KZ_BIN",
-            "iban": "KZ_IBAN", "credit card": "CARD", "phone": "PHONE", "email": "EMAIL",
+            "person": "PERSON",
+            "organization": "ORG",
+            "iin": "KZ_IIN",
+            "bin": "KZ_BIN",
+            "iban": "KZ_IBAN",
+            "credit card": "CARD",
+            "phone": "PHONE",
+            "email": "EMAIL",
         }
-        return [Detected(label_map.get(r["label"], r["label"].upper()), r["text"], r["start"], r["end"])
-                for r in raw]
+        return [
+            Detected(label_map.get(r["label"], r["label"].upper()), r["text"], r["start"], r["end"])
+            for r in raw
+        ]

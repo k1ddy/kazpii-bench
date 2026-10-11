@@ -8,6 +8,7 @@
 Метрики: микро и макро precision/recall/F1, в том числе по типам;
 отдельный отчёт по негативным примерам ложные срабатывания.
 """
+
 from __future__ import annotations
 
 import json
@@ -132,35 +133,63 @@ def evaluate(dataset_path, detect_fn, mode: str = "span") -> dict:
     return {
         "dataset": dataset_path,
         "mode": mode,
-        "micro": {"precision": round(p, 4), "recall": round(r, 4), "f1": round(f, 4),
-                  "tp": m.tp, "fp": m.fp, "fn": m.fn},
-        "negatives": {"count": m.negatives, "false_positives": m.fp_on_negative,
-                      "fp_rate": round(m.fp_on_negative / m.negatives, 4) if m.negatives else None},
-        "per_type": {t: {"tp": v[0], "fp": v[1], "fn": v[2],
-                         "recall": round(v[0] / (v[0] + v[2]), 4) if v[0] + v[2] else None}
-                     for t, v in sorted(m.per_type.items())},
+        "micro": {
+            "precision": round(p, 4),
+            "recall": round(r, 4),
+            "f1": round(f, 4),
+            "tp": m.tp,
+            "fp": m.fp,
+            "fn": m.fn,
+        },
+        "negatives": {
+            "count": m.negatives,
+            "false_positives": m.fp_on_negative,
+            "fp_rate": round(m.fp_on_negative / m.negatives, 4) if m.negatives else None,
+        },
+        "per_type": {
+            t: {
+                "tp": v[0],
+                "fp": v[1],
+                "fn": v[2],
+                "recall": round(v[0] / (v[0] + v[2]), 4) if v[0] + v[2] else None,
+            }
+            for t, v in sorted(m.per_type.items())
+        },
         "errors": errors[:20],
-        "by_noise": {k: {"precision": round(v.prf()[0], 4), "recall": round(v.prf()[1], 4),
-                         "f1": round(v.prf()[2], 4), "tp": v.tp, "fn": v.fn}
-                     for k, v in sorted(by_noise.items())},
+        "by_noise": {
+            k: {
+                "precision": round(v.prf()[0], 4),
+                "recall": round(v.prf()[1], 4),
+                "f1": round(v.prf()[2], 4),
+                "tp": v.tp,
+                "fn": v.fn,
+            }
+            for k, v in sorted(by_noise.items())
+        },
     }
 
 
 def report_markdown(result: dict) -> str:
     lines = [f"# KazPII-Bench report — {result['dataset']}", ""]
     mi = result["micro"]
-    lines += [f"- mode: `{result['mode']}`",
-              f"- micro P/R/F1: **{mi['precision']:.3f} / {mi['recall']:.3f} / {mi['f1']:.3f}** "
-              f"(tp={mi['tp']}, fp={mi['fp']}, fn={mi['fn']})"]
+    lines += [
+        f"- mode: `{result['mode']}`",
+        f"- micro P/R/F1: **{mi['precision']:.3f} / {mi['recall']:.3f} / {mi['f1']:.3f}** "
+        f"(tp={mi['tp']}, fp={mi['fp']}, fn={mi['fn']})",
+    ]
     neg = result["negatives"]
-    lines += [f"- negatives: {neg['count']}, false positives: {neg['false_positives']} "
-              f"(fp rate {neg['fp_rate']})", "",
-              "| type | tp | fp | fn | recall |", "|---|---|---|---|---|"]
+    lines += [
+        f"- negatives: {neg['count']}, false positives: {neg['false_positives']} (fp rate {neg['fp_rate']})",
+        "",
+        "| type | tp | fp | fn | recall |",
+        "|---|---|---|---|---|",
+    ]
     for t, v in result["per_type"].items():
         lines.append(f"| {t} | {v['tp']} | {v['fp']} | {v['fn']} | {v['recall']} |")
     if result.get("by_noise"):
         lines += ["", "## По шуму", "", "| шум | P | R | F1 | tp | fn |", "|---|---|---|---|---|---|"]
         for k, v in result["by_noise"].items():
-            lines.append(f"| {k} | {v['precision']:.3f} | {v['recall']:.3f} | {v['f1']:.3f} "
-                         f"| {v['tp']} | {v['fn']} |")
+            lines.append(
+                f"| {k} | {v['precision']:.3f} | {v['recall']:.3f} | {v['f1']:.3f} | {v['tp']} | {v['fn']} |"
+            )
     return "\n".join(lines)

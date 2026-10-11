@@ -21,6 +21,7 @@ Invariants (tested):
   - all noise is 1:1 character substitution (offsets never shift)
   - generation is deterministic given (seed, version)
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -57,8 +58,8 @@ class Example:
 
     def validate(self) -> None:
         for s in self.spans:
-            assert self.text[s.start:s.end] == s.value, (
-                f"span mismatch: {self.text[s.start:s.end]!r} != {s.value!r}"
+            assert self.text[s.start : s.end] == s.value, (
+                f"span mismatch: {self.text[s.start : s.end]!r} != {s.value!r}"
             )
             assert s.start < s.end, "empty span"
 

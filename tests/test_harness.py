@@ -39,7 +39,7 @@ def test_baseline_detects_clean_iin():
     types = {x.type for x in got}
     assert "KZ_IIN" in types and "PHONE" in types
     for x in got:
-        assert "ИИН 900517301146 и тел +7 701 555 12 34"[x.start:x.end]
+        assert "ИИН 900517301146 и тел +7 701 555 12 34"[x.start : x.end]
 
 
 def test_negatives_produce_zero_findings():

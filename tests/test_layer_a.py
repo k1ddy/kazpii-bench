@@ -61,9 +61,24 @@ def test_cli_writes_jsonl_and_manifest(tmp_path):
     man = tmp_path / "manifest.json"
     test_out.parent.mkdir(parents=True, exist_ok=True)
     r = subprocess.run(
-        [sys.executable, "-m", "kazpii_bench", "build", "--n", "300", "--seed", "9",
-         "--dev-out", str(dev_out), "--test-out", str(test_out), "--manifest", str(man)],
-        capture_output=True, text=True,
+        [
+            sys.executable,
+            "-m",
+            "kazpii_bench",
+            "build",
+            "--n",
+            "300",
+            "--seed",
+            "9",
+            "--dev-out",
+            str(dev_out),
+            "--test-out",
+            str(test_out),
+            "--manifest",
+            str(man),
+        ],
+        capture_output=True,
+        text=True,
     )
     assert r.returncode == 0, r.stderr
     lines = dev_out.read_text(encoding="utf-8").strip().splitlines()

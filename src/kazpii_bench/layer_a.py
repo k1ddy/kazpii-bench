@@ -6,6 +6,7 @@
   - генерация детерминирована при фиксированном seed;
   - в тестовую выборку не попадает ни один dev-пример (split по хешу).
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -43,12 +44,14 @@ def gen_name(rng) -> str:
 def gen_phone(rng) -> str:
     code = rng.choice(PHONE_CODES)
     digits = "".join(str(rng.randint(0, 9)) for _ in range(7))
-    tmpl = rng.choice([
-        f"+7 {code} {digits[:3]} {digits[3:5]} {digits[5:]}",
-        f"8{code}{digits[:3]}{digits[3:5]}{digits[5:]}",
-        f"8 ({code}) {digits[:3]}-{digits[3:5]}-{digits[5:]}",
-        f"+7{code}{digits}",
-    ])
+    tmpl = rng.choice(
+        [
+            f"+7 {code} {digits[:3]} {digits[3:5]} {digits[5:]}",
+            f"8{code}{digits[:3]}{digits[3:5]}{digits[5:]}",
+            f"8 ({code}) {digits[:3]}-{digits[3:5]}-{digits[5:]}",
+            f"+7{code}{digits}",
+        ]
+    )
     return tmpl
 
 
@@ -58,10 +61,12 @@ def gen_email(rng) -> str:
 
 
 def gen_passport_kz(rng) -> str:
-    return rng.choice([
-        "".join(str(rng.randint(0, 9)) for _ in range(9)),                      # внутренний
-        rng.choice("ABCDEMHNPR") + "".join(str(rng.randint(0, 9)) for _ in range(7)),  # загран
-    ])
+    return rng.choice(
+        [
+            "".join(str(rng.randint(0, 9)) for _ in range(9)),  # внутренний
+            rng.choice("ABCDEMHNPR") + "".join(str(rng.randint(0, 9)) for _ in range(7)),  # загран
+        ]
+    )
 
 
 # «похожие, но не ПДн» — для негативных примеров
@@ -128,8 +133,14 @@ def build_body(body_tmpl: str, rng) -> tuple[str, list[Span], list[str]]:
 def finalize_spans(spans: list[Span]) -> list[Span]:
     """Отображаем placeholder-типы в типы детекторов."""
     mapping = {
-        "iin": "KZ_IIN", "bin": "KZ_BIN", "iban": "KZ_IBAN", "card": "CARD",
-        "phone": "PHONE", "email": "EMAIL", "passport": "KZ_PASSPORT", "name": "PERSON",
+        "iin": "KZ_IIN",
+        "bin": "KZ_BIN",
+        "iban": "KZ_IBAN",
+        "card": "CARD",
+        "phone": "PHONE",
+        "email": "EMAIL",
+        "passport": "KZ_PASSPORT",
+        "name": "PERSON",
     }
     for s in spans:
         s.type = mapping[s.type.split(":")[-1]]
@@ -166,7 +177,7 @@ def build_example(rng, idx, *, split: str, noise_kinds=("ocr",), id_prefix="kzpb
         spans = finalize_spans(spans)
         # после нойза значение в тексте изменилось — перечитываем ground truth из текста
         for s in spans:
-            s.value = body[s.start:s.end]
+            s.value = body[s.start : s.end]
 
     # офсеты тела → офсеты полного текста
     for s in spans:

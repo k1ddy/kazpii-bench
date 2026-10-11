@@ -1,4 +1,5 @@
 """Детекторы для харнеса."""
+
 from __future__ import annotations
 
 import re
@@ -18,13 +19,16 @@ class BaselineDetector:
             parse_iban,
             validate_bin,
         )
+
         self._ok_iin = is_valid_iin_checksum
         self._bin = validate_bin
         self._iban = parse_iban
         self._luhn = luhn_ok
         self._re_iban = re.compile(r"\bKZ(?:\s?\d){2}(?:\s?\d){3}(?:\s?[A-Z0-9]){13}\b")
         self._re_card = re.compile(r"(?<!\d)\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}(?!\d)")
-        self._re_phone = re.compile(r"(?<!\d)(?:\+7|8)[\s\-()]?\d{3}[\s\-()]?\d{3}[\s\-()]?\d{2}[\s\-()]?\d{2}(?!\d)")
+        self._re_phone = re.compile(
+            r"(?<!\d)(?:\+7|8)[\s\-()]?\d{3}[\s\-()]?\d{3}[\s\-()]?\d{2}[\s\-()]?\d{2}(?!\d)"
+        )
         self._re_email = re.compile(r"\b[\w.+-]+@[\w-]+\.[\w.]{2,}\b")
         self._re_pp = re.compile(r"\b(?:[A-Z]\d{7}|[A-Z]\d{2}\s\d{6})\b")
         self._re_12 = re.compile(r"(?<!\d)\d{12}(?!\d)")
@@ -71,8 +75,11 @@ class GatewayScanDetector:
         self.timeout = timeout
 
     def detect(self, text: str) -> list[Detected]:
-        req = self._req(self.url + "/scan", data=self._json.dumps({"texts": [text]}).encode(),
-                        headers={"Content-Type": "application/json"})
+        req = self._req(
+            self.url + "/scan",
+            data=self._json.dumps({"texts": [text]}).encode(),
+            headers={"Content-Type": "application/json"},
+        )
         with self._urlopen(req, timeout=self.timeout) as resp:
             res = self._json.loads(resp.read().decode())
         out = []
@@ -83,4 +90,3 @@ class GatewayScanDetector:
             first2, last2 = (m.group(1), m.group(2)) if m else ("", "")
             out.append(Detected(f["type"], f"{first2}{last2}".upper()))
         return out
-
