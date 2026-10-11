@@ -103,7 +103,9 @@ def evaluate(dataset_path, detect_fn, mode: str = "span") -> dict:
             m.fn += fn
             noise_key = ",".join(rec.get("noise") or []) or "clean"
             nb = by_noise[noise_key]
-            nb.tp += tp; nb.fp += fp; nb.fn += fn
+            nb.tp += tp
+            nb.fp += fp
+            nb.fn += fn
             # по типам — через ту же сигнатуру, что и micro
             gold_by_type = defaultdict(set)
             for g in gold:
