@@ -1,0 +1,22 @@
+{
+  "schema_version": "0.1.0",
+  "layer": "B",
+  "seed": 20261011,
+  "n_requested": 3000,
+  "n_dev": 2390,
+  "n_test": 580,
+  "test_ratio": 0.2,
+  "noise": [],
+  "generator": "kz-identifiers/0.1.0 + KazNERD CC BY 4.0",
+  "files": {
+    "dev": {
+      "path": "data/samples/dev_layerB_3000.jsonl",
+      "sha256": "e83edc7ca4c3f3de73dbb7742ed7c4db8b1f0ffce7528ca18fedefd55ac70639"
+    },
+    "test": {
+      "path": "data/private/test_layerB_3000.jsonl",
+      "sha256": "b94625f48b629e6b49bab22d19bb7fd1c321c64b1bad10a6333e45c861acffd2"
+    }
+  },
+  "note": "test-часть закрыта: хранится вне публичного репозитория"
+}

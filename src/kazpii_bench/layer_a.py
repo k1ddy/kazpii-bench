@@ -183,7 +183,7 @@ def build_example(rng, idx, *, split: str, noise_kinds=("ocr",), id_prefix="kzpb
         noise=noise_applied,
         lang=LANG_BY_CONTEXT.get(ctx, "ru"),
         split=split,
-        generator=f"kz-identifiers/0.1.0",
+        generator="kz-identifiers/0.1.0",
     )
     return ex
 

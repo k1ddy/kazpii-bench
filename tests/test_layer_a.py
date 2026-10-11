@@ -5,7 +5,6 @@ import sys
 from kazpii_bench import CANARY
 from kazpii_bench.layer_a import generate
 from kazpii_bench.noise import NOISE_MAPS, apply_noise
-from kazpii_bench.schema import write_jsonl
 
 
 def test_offsets_and_values_exact():

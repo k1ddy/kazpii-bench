@@ -25,8 +25,8 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Iterator
 from dataclasses import asdict, dataclass, field
-from typing import Iterator
 
 CANARY = "kzpii-bench-canary-2026"
 SCHEMA_VERSION = "0.1.0"
