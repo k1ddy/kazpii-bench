@@ -105,7 +105,7 @@ def ingest(path: str, n: int, seed: int, test_ratio: float = 0.2):
 
     rng = random.Random(seed)
     dev, test, seen = [], [], 0
-    for sent_id, tokens, tags in iter_sentences(path):
+    for sent_id, tokens, _tags in iter_sentences(path):
         if seen >= n:
             break
         ex = build_example(rng, sent_id, tokens, seen)

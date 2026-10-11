@@ -98,7 +98,9 @@ def evaluate(dataset_path, detect_fn, mode: str = "span") -> dict:
                 tp, fp, fn = match_spans(gold, det)
             else:
                 tp, fp, fn = match_values(gold, det)
-            m.tp += tp; m.fp += fp; m.fn += fn
+            m.tp += tp
+            m.fp += fp
+            m.fn += fn
             noise_key = ",".join(rec.get("noise") or []) or "clean"
             nb = by_noise[noise_key]
             nb.tp += tp; nb.fp += fp; nb.fn += fn
