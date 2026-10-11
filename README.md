@@ -50,6 +50,30 @@ there is no public, reproducible way to measure how systems find Kazakhstani PII
 - каждые запись несёт canary-строку для детекции утечки в обучение;
 - `split` по SHA-256 — dev/test не пересекаются.
 
+## Воспроизведение замеров
+
+Лёгкий набор (CI): `pip install -e ".[dev]" && pytest -m "not crosscheck"`.
+
+Тяжёлые детекторы ставятся отдельно, вне CI:
+
+```bash
+pip install presidio-analyzer natasha gliner torch
+# presidio дополнительно тянет spaCy-модель en_core_web_lg при первом запуске
+```
+
+Замеры из `results/`:
+
+```bash
+python -m kazpii_bench eval --detector baseline --dataset data/samples/dev_sample_5000.jsonl --mode span
+python -m kazpii_bench eval --detector gateway   --dataset data/samples/dev_sample_5000.jsonl --mode value --url http://127.0.0.1:18451
+python -m kazpii_bench eval --detector presidio  --dataset data/samples/dev_sample_5000.jsonl --mode span
+python -m kazpii_bench eval --detector natasha   --dataset data/samples/dev_sample_5000.jsonl --mode span
+python -m kazpii_bench eval --detector gliner    --dataset data/samples/dev_sample_5000.jsonl --mode span
+```
+
+Замечания по воспроизводимости: GLiNER требует `transformers==4.53.x`
+(на 5.x ломается токенайзер) и `protobuf`, `tiktoken`, `sentencepiece`.
+
 ## Генерация
 
 ```bash
