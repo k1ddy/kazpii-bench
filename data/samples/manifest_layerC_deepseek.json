@@ -1,0 +1,39 @@
+{
+  "schema_version": "0.1.0",
+  "layer": "C",
+  "seed": 20261011,
+  "n_requested": 5000,
+  "n_dev": 2967,
+  "n_test": 0,
+  "test_ratio": 0.2,
+  "noise": [],
+  "generator": "deepseek/deepseek-v4.1-flash",
+  "files": {
+    "dev": {
+      "path": "/tmp/dev_layerC_deepseek.jsonl",
+      "sha256": "d7fe10309be1501e7a4af21add01f2a63312d5e2a212f8864ec1065db6277d72"
+    },
+    "test": {
+      "path": "/tmp/ds_test.jsonl",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "note": "test-часть закрыта: хранится вне публичного репозитория",
+  "accept_stats": {
+    "accepted": 2967,
+    "rejected": {
+      "no_spans": 1017,
+      "no_markers": 2
+    },
+    "total": 3986,
+    "accept_rate": 0.7444,
+    "per_model_accepted": {
+      "deepseek/deepseek-v4.1-flash": 2967
+    },
+    "cost_estimate_usd": {
+      "openai/gpt-6-luna": 0.718,
+      "anthropic/claude-haiku-5.5": 0.718,
+      "deepseek/deepseek-v4.1-flash": 1.78
+    }
+  }
+}

@@ -6,7 +6,8 @@
 офсеты пересчитаны из позиций маркеров. Нарушение → пример отклоняется и идёт
 в статистику отказов генератора.
 
-Стоимость (проверено на 3000 примерах): ~$1 за модель, всего ~$3 на три.
+Оффлайн-воспроизводимость: каждый вызов модели пишется в AUDIT (промт, помеченный
+текст, сырой ответ, finish_reason, usage) — сверять можно без повторных трат.
 """
 
 from __future__ import annotations
@@ -15,7 +16,9 @@ import json
 import os
 import random
 import re
+import time
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 
 from .schema import Example, Span
@@ -43,6 +46,16 @@ STYLE_PROMPT = {
 
 MARKER_RE = re.compile(r"⟨(KZ_IIN|KZ_BIN|KZ_IBAN|KZ_PASSPORT|CARD|PHONE|EMAIL|PERSON)⟩(.*?)⟨/\1⟩", re.S)
 
+# Аудит-след: каждый вызов модели для оффлайн-сверок (без повторных трат).
+AUDIT: list[dict] = []
+
+
+def flush_audit(path: str) -> None:
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        for rec in AUDIT:
+            f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+
 
 @dataclass
 class ParaphraseResult:
@@ -52,13 +65,17 @@ class ParaphraseResult:
     reason: str = ""
 
 
-def _post_chat(model: str, prompt: str, api_key: str, timeout: float = 60.0) -> str:
+def _post_chat(model: str, prompt: str, api_key: str, timeout: float = 60.0):
+    """Возвращает (content, meta). meta = finish_reason/usage/model."""
     body = {
         "model": model,
         "messages": [{"role": "user", "content": prompt}],
         "temperature": 0,
-        "max_tokens": 1200,
+        "max_tokens": 1600,
     }
+    # reasoning-модели жрут бюджет на «размышления» и возвращают content=null
+    if "deepseek" in model or "gpt-5" in model:
+        body["reasoning"] = {"enabled": False}
     req = urllib.request.Request(
         OPENROUTER_URL,
         data=json.dumps(body).encode(),
@@ -70,7 +87,16 @@ def _post_chat(model: str, prompt: str, api_key: str, timeout: float = 60.0) -> 
     )
     with urllib.request.urlopen(req, timeout=timeout) as resp:
         data = json.loads(resp.read().decode())
-    return data["choices"][0]["message"]["content"].strip()
+    choice = data["choices"][0]
+    content = choice["message"].get("content")
+    if not content:
+        raise ValueError(f"empty content (finish={choice.get('finish_reason')})")
+    meta = {
+        "finish_reason": choice.get("finish_reason"),
+        "usage": data.get("usage", {}),
+        "model": data.get("model"),
+    }
+    return content.strip(), meta
 
 
 def build_prompt(text: str, style: str) -> str:
@@ -95,7 +121,7 @@ def mark_text(text: str, spans: list[Span]) -> str:
 
 
 def verify_paraphrase(original: str, spans: list[Span], rewritten: str) -> ParaphraseResult:
-    """Детерминированная проверка: маркеры целы, значения те же, новыe офсеты."""
+    """Детерминированная проверка: маркеры целы, значения те же, новые офсеты."""
     found = MARKER_RE.findall(rewritten)
     if not found:
         return ParaphraseResult(rewritten, [], False, "no_markers")
@@ -120,7 +146,7 @@ def verify_paraphrase(original: str, spans: list[Span], rewritten: str) -> Parap
 
 
 def paraphrase_example(
-    rec: dict, model: str, api_key: str, style: str | None = None
+    rec: dict, model: str, api_key: str, style: str | None = None, retries: int = 3
 ) -> tuple[Example | None, str]:
     """Возвращает (Example|None, reason). reason != '' если отклонён."""
     rng = random.Random(hash((rec["id"], model)) & 0xFFFF)
@@ -131,13 +157,48 @@ def paraphrase_example(
     if not spans:
         return None, "no_spans"
     marked = mark_text(rec["text"], spans)
-    try:
-        out = _post_chat(model, build_prompt(marked, style), api_key)
-    except Exception as e:
-        return None, f"api_error:{type(e).__name__}"
+    prompt = build_prompt(marked, style)
+
+    out, meta = None, {}
+    for attempt in range(retries):
+        try:
+            out, meta = _post_chat(model, prompt, api_key)
+            break
+        except Exception as e:
+            if attempt == retries - 1:
+                AUDIT.append(
+                    {
+                        "id": rec.get("id"),
+                        "model": model,
+                        "style": style,
+                        "prompt": prompt,
+                        "marked_text": marked,
+                        "raw_response": None,
+                        "error": f"{type(e).__name__}: {e}",
+                        "accepted": False,
+                        "reason": "api_error",
+                    }
+                )
+                return None, f"api_error:{type(e).__name__}"
+            time.sleep(2 * (attempt + 1))
+
     res = verify_paraphrase(rec["text"], spans, out)
+    AUDIT.append(
+        {
+            "id": rec.get("id"),
+            "model": model,
+            "style": style,
+            "prompt": prompt,
+            "marked_text": marked,
+            "raw_response": out,
+            "meta": meta,
+            "accepted": res.accepted,
+            "reason": res.reason,
+        }
+    )
     if not res.accepted:
         return None, res.reason
+
     ex = Example(
         id=rec["id"].replace("kzpb-", "kzpbC-") + f"-{model.split('/')[-1][:12]}",
         text=res.text,
@@ -145,6 +206,7 @@ def paraphrase_example(
         layer="C",
         generator=model,
         context=style,
+        noise=rec.get("noise", []),
         lang=rec.get("lang", "ru"),
         split=rec.get("split", "dev"),
     )
@@ -152,7 +214,7 @@ def paraphrase_example(
 
 
 def total_cost_estimate(n: int, avg_in: int = 320, avg_out: int = 420) -> dict:
-    """Оценка стоимости прогона: цены за 1M токенов из MODELS_PRICING."""
+    """Оценка стоимости прогона: цены за 1M токенов из PRICING."""
     pricing = {
         "openai/gpt-6-luna": (0.10, 0.50),
         "anthropic/claude-haiku-5.5": (0.100, 0.500),
@@ -164,10 +226,15 @@ def total_cost_estimate(n: int, avg_in: int = 320, avg_out: int = 420) -> dict:
     }
 
 
-def build_layer_c(seed_path, models, n, seed=20261011, test_ratio=0.2):
+def build_layer_c(
+    seed_path: str,
+    models: list[str],
+    n: int,
+    seed: int = 20261011,
+    test_ratio: float = 0.2,
+    audit_path: str = "",
+):
     """Прогон слоя C: читает seed-набор, перефразирует, верифицирует кодом."""
-    import json as _json
-
     api_key = os.environ.get("OPENROUTER_API_KEY")
     if not api_key:
         raise RuntimeError("OPENROUTER_API_KEY required (см. .env phase2)")
@@ -176,15 +243,22 @@ def build_layer_c(seed_path, models, n, seed=20261011, test_ratio=0.2):
         for line in f:
             line = line.strip()
             if line:
-                recs.append(_json.loads(line))
+                recs.append(json.loads(line))
     rng = random.Random(seed)
     rng.shuffle(recs)
     recs = recs[: n * len(models)]
 
+    def work(i_rec):
+        i, rec = i_rec
+        return paraphrase_example(rec, models[i % len(models)], api_key)
+
+    with ThreadPoolExecutor(max_workers=16) as pool:
+        results = list(pool.map(work, enumerate(recs)))
+    if audit_path:
+        flush_audit(audit_path)
+
     dev, test, stats = [], [], {"accepted": 0, "rejected": {}}
-    for i, rec in enumerate(recs):
-        model = models[i % len(models)]
-        ex, reason = paraphrase_example(rec, model, api_key)
+    for ex, reason in results:
         if ex is None:
             stats["rejected"][reason] = stats["rejected"].get(reason, 0) + 1
             continue
@@ -192,5 +266,8 @@ def build_layer_c(seed_path, models, n, seed=20261011, test_ratio=0.2):
         (test if ex.split == "test" else dev).append(ex)
     stats["total"] = stats["accepted"] + sum(stats["rejected"].values())
     stats["accept_rate"] = round(stats["accepted"] / stats["total"], 4) if stats["total"] else None
+    stats["per_model_accepted"] = {}
+    for e in dev + test:
+        stats["per_model_accepted"][e.generator] = stats["per_model_accepted"].get(e.generator, 0) + 1
     stats["cost_estimate_usd"] = total_cost_estimate(stats["accepted"])
     return dev, test, stats

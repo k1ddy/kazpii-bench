@@ -29,6 +29,7 @@ def build_cmd(args) -> int:
             args.n,
             seed=args.seed,
             test_ratio=args.test_ratio,
+            audit_path=args.audit_out or "",
         )
         generator = " + ".join(args.models.split(","))
     else:
@@ -54,6 +55,7 @@ def build_cmd(args) -> int:
             "test": {"path": args.test_out, "sha256": file_sha256(args.test_out)},
         },
         "note": "test-часть закрыта: хранится вне публичного репозитория",
+        "accept_stats": stats if args.layer == "C" else None,
     }
     if args.manifest:
         with open(args.manifest, "w", encoding="utf-8") as f:
@@ -114,6 +116,7 @@ def main(argv=None) -> int:
     b.add_argument("--test-ratio", type=float, default=0.2)
     b.add_argument("--noise", default="ocr", help="список нойзов через запятую: ocr,kaz_loose,translit")
     b.add_argument("--dev-in", default="", help="слой C: seed-набор (jsonl слоя A/B)")
+    b.add_argument("--audit-out", default="", help="слой C: audit-лог (промт+ответ+параметры каждого вызова)")
     b.add_argument("--dev-out", required=True)
     b.add_argument("--test-out", required=True)
     b.add_argument("--manifest", default="")
